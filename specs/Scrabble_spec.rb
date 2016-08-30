@@ -16,6 +16,7 @@ describe 'Testing Scrabble' do
 
   it "Must return word with highest score from array of words" do
     expect(Scrabble::Scoring.highest_score_from(["art","quiz","racecar"])).must_equal("RACECAR")
+    expect(Scrabble::Scoring.highest_score_from(["jacuzzi","jazzmen","jazzman"])).must_equal("JACUZZI")
   end
 
   it "In a tie, must return word with fewer letters" do
