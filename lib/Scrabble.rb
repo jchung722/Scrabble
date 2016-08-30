@@ -10,11 +10,8 @@ class Scrabble::Scoring
     letters = word.split(//)
     score = 0
     letters.each do |letter|
-      Scrabble::LETTER_VALUES.each do |key, value|
-        if key.include?(letter)
-          score += value
-        end
-      end
+      a = Scrabble::LETTER_VALUES.detect{ |k, v| k.include?(letter)}
+      score += a[1]
     end
 
     if letters.length == 7
@@ -47,6 +44,6 @@ class Scrabble::Scoring
 
 end
 
-ap Scrabble::Scoring.highest_score_from(["qzqzqj", "aeiould"])
+# ap Scrabble::Scoring.highest_score_from(["qzqzqj", "aeiould"])
 # ap Scrabble::Scoring.score("aeiould")
-# ap Scrabble::Scoring.score("qzqzqj")
+ap Scrabble::Scoring.score("qzqzqj")
