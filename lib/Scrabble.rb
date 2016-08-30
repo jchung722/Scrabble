@@ -1,5 +1,6 @@
 #Scrabble.rb
 
+#test
 require_relative '../Scrabble/'
 require 'awesome_print'
 
