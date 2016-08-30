@@ -1,6 +1,5 @@
 #Scrabble.rb
 
-#test2
 require_relative '../Scrabble/'
 require 'awesome_print'
 
@@ -18,8 +17,7 @@ class Scrabble::Scoring
 
   #Create self.score: returns total score of word input
   def self.score(word)
-
-    word.upcase! #changes all letters to uppercase
+    word = word.upcase #changes all letters to uppercase
 
     letters = word.split(//)
     score = 0
@@ -32,7 +30,6 @@ class Scrabble::Scoring
     score += bonus_check(letters)
 
     return score
-
   end
 
   #Create self.highest_score_from method: returns highest scoring word in given list
@@ -59,6 +56,62 @@ class Scrabble::Scoring
 
 end
 
+class Scrabble::Player
+  attr_reader :name, :plays
+  def initialize(name)
+    @name = name
+    @plays = []
+  end
+
+  # Method to store a played word and return the score
+  def play(word)
+      if won? == true # Check if the game should already be over
+        return false
+      end
+      word = word.upcase
+      score = Scrabble::Scoring.score(word)
+      plays << word
+      return score
+  end
+
+  # Method to calculate the current total score
+  def total_score
+    total_score = 0
+    plays.each do |word|
+      total_score += Scrabble::Scoring.score(word)
+    end
+    return total_score
+  end
+
+  # Method to determine if the player has won
+  def won?
+    win = false
+    win = true if total_score >= 100
+    return win
+  end
+
+  # Method to find the highest scoring WORD played
+  def highest_scoring_word
+    word = Scrabble::Scoring.highest_score_from(plays)
+    return word
+  end
+
+  # Method to find the SCORE of the highest scoring word played
+  def highest_word_score
+    word = highest_scoring_word
+    highest_score = Scrabble::Scoring.score(word)
+    return highest_score
+  end
+
+end
+
 # ap Scrabble::Scoring.highest_score_from(["qzqzqj", "aeiould"])
 # ap Scrabble::Scoring.score("aeiould")
 # ap Scrabble::Scoring.score("2qzqzqj")
+
+p1 = Scrabble::Player.new("Jessica")
+p1.play("test")
+p1.play("newWord")
+
+ap p1.won?
+ap p1.highest_word_score
