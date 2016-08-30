@@ -105,6 +105,16 @@ class Scrabble::Player
 
 end
 
+class Scrabble::TileBag
+  attr_reader :tiles
+  def initialize
+    @tiles = BEGINNING_TILE_BAG
+
+  end
+
+end
+
+
 # ap Scrabble::Scoring.highest_score_from(["qzqzqj", "aeiould"])
 # ap Scrabble::Scoring.score("aeiould")
 # ap Scrabble::Scoring.score("2qzqzqj")

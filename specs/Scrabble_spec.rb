@@ -82,7 +82,7 @@ describe 'Testing Scrabble' do
     expect( proc {p1.play("test@")}).must_raise ArgumentError
   end
 
-  it "Must true if the player already won for won? and return false if they try to enter a new word" do
+  it "Must true if the player already won for won? and return false if the total score is < 100" do
     p1 = Scrabble::Player.new("Jessica")
     p1.play("newWord")
     expect(p1.won?).must_equal(false)
@@ -90,7 +90,9 @@ describe 'Testing Scrabble' do
 
   ##########-------------------- Wave 3 ------------------------##########
 
-
+  it "Must set up an instance with a collection of default tiles"
+    expect(Scrabble::TileBag.new).must_be_instance_of Array
+  end
 
 
 end
