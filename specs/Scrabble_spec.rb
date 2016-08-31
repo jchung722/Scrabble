@@ -101,11 +101,29 @@ describe 'Testing Scrabble' do
     expect(t1.draw_tiles(3).length).must_equal(3)
   end
 
-  it "Must return that there are no tiles left if we draw 97 tiles" do
+  it "Must return that there are no tiles left if we draw 98 tiles" do
     t2 = Scrabble::TileBag.new
-    t2.draw_tiles(97)
-    expect(t2.tiles.values.inject(:+)).must_equal(1)
+    t2.draw_tiles(98)
+    expect(t2.tiles.values.inject(:+)).must_equal(nil)
   end
 
+  it "Must return number of tiles remaining in bag" do
+    t1 = Scrabble::TileBag.new
+    expect(t1.tiles_remaining).must_equal(98)
+  end
+
+  ##########---------------------- Wave 3 P2 ----------------------#########
+
+  it "Must initialize a collection of tile letters that the player can use" do
+  p1 = Scrabble::Player.new("Jessica")
+  expect(p1.player_tiles).must_be_instance_of Array
+  expect(p1.player_tiles.length).must_equal(7)
+  end
+
+  it "Must always keep player tiles at 7" do
+  p1 = Scrabble::Player.new("Jeannie")
+  p1.play("art")
+  expect(p1.player_tiles.length).must_equal(7)
+  end
 
 end

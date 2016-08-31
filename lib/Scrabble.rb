@@ -57,20 +57,24 @@ class Scrabble::Scoring
 end
 
 class Scrabble::Player
-  attr_reader :name, :plays
-  def initialize(name)
+  attr_reader :name, :plays, :player_tiles
+  def initialize(name, tilebag_object = Scrabble::TileBag.new)
     @name = name
     @plays = []
+    @player_tiles = []
+    @tile_bag = tilebag_object
+    draw_tiles
   end
 
   # Method to store a played word and return the score
   def play(word)
-      if won? == true # Check if the game should already be over
-        return false
-      end
       word = word.upcase
       score = Scrabble::Scoring.score(word)
       plays << word
+      if won? == true # Check if the game should already be over
+        return false
+      end
+      puts plays
       return score
   end
 
@@ -101,6 +105,24 @@ class Scrabble::Player
     word = highest_scoring_word
     highest_score = Scrabble::Scoring.score(word)
     return highest_score
+  end
+
+
+  def draw_tiles
+
+    fill = 7 - @player_tiles.length
+    @player_tiles += @tile_bag.draw_tiles(fill)
+    return @player_tiles
+
+  end
+
+  def update_player_tiles(word)
+    letters = word.upcase.split(//)
+    letters.each do |letter|
+      @player_tiles.delete_at(@player_tiles.index(letter))
+    end
+    draw_tiles
+    return @player_tiles
   end
 
 end
@@ -137,25 +159,34 @@ class Scrabble::TileBag
 
 end
 
-t1 = Scrabble::TileBag.new
-ap t1.draw_tiles(6)
+class Scrabble::Game
 
-ap t1.tiles.values.inject(:+)
-ap t1.tiles_remaining
+  attr_reader :p1
 
-ap t1.tiles.class
+  def initialize(player1)
+    @p1 = Scrabble::Player.new(player1)
+  end
 
-# ap t1.tiles
+  def move
+    while true
+    print "Player 1 Tiles: #{p1.player_tiles}\nEnter a word with these tiles(type exit to quit):"
+    word = gets.chomp
+    if word == "exit"
+      exit
+    end
+    word_score = p1.play(word)
+    puts word_score
+      if word_score == false
+        puts "Wow, #{p1.name}! Your score is #{p1.total_score}! Looks like you won! :D"
+        exit
+      else
+        puts "Your score is #{p1.total_score}!"
+      end
+    p1.update_player_tiles(word)
+    end
+  end
 
+end
 
-
-# ap Scrabble::Scoring.highest_score_from(["qzqzqj", "aeiould"])
-# ap Scrabble::Scoring.score("aeiould")
-# ap Scrabble::Scoring.score("2qzqzqj")
-
-# p1 = Scrabble::Player.new("Jessica")
-# p1.play("test")
-# p1.play("newWord")
-#
-# ap p1.won?
-# ap p1.highest_word_score
+game = Scrabble::Game.new("Jeannie")
+game.move
