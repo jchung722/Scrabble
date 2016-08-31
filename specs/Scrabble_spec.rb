@@ -90,8 +90,21 @@ describe 'Testing Scrabble' do
 
   ##########-------------------- Wave 3 ------------------------##########
 
-  it "Must set up an instance with a collection of default tiles"
-    expect(Scrabble::TileBag.new).must_be_instance_of Array
+  it "Must set up an instance with a collection of default tiles" do
+    expect(Scrabble::TileBag.new).must_be_instance_of Scrabble::TileBag
+    expect(Scrabble::TileBag.new.tiles).must_be_instance_of Hash
+  end
+
+  it "Must return the number of drawn tiles as an array of strings" do
+    t1 = Scrabble::TileBag.new
+    expect(t1.draw_tiles(3)).must_be_instance_of Array
+    expect(t1.draw_tiles(3).length).must_equal(3)
+  end
+
+  it "Must return that there are no tiles left if we draw 97 tiles" do
+    t2 = Scrabble::TileBag.new
+    t2.draw_tiles(97)
+    expect(t2.tiles.values.inject(:+)).must_equal(1)
   end
 
 

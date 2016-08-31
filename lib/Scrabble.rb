@@ -108,20 +108,54 @@ end
 class Scrabble::TileBag
   attr_reader :tiles
   def initialize
-    @tiles = BEGINNING_TILE_BAG
+    @tiles = Scrabble::BEGINNING_TILE_BAG.clone
+  end
 
+
+  def draw_tiles(num)
+    drawn_tiles = []
+    num.times do
+      drawn_tile = @tiles.to_a.sample[0]
+      @tiles[drawn_tile] -= 1
+      drawn_tiles << drawn_tile.to_s
+
+      clean_up_bag(drawn_tile)  #Remove letters without tiles left from @@tiles
+    end
+    return drawn_tiles
+  end
+
+  def tiles_remaining
+    return @tiles.values.inject(:+)
+  end
+
+  def clean_up_bag(drawn_tile)
+    if @tiles[drawn_tile] == 0
+      @tiles.delete(drawn_tile)
+    end
+    return @tiles
   end
 
 end
+
+t1 = Scrabble::TileBag.new
+ap t1.draw_tiles(6)
+
+ap t1.tiles.values.inject(:+)
+ap t1.tiles_remaining
+
+ap t1.tiles.class
+
+# ap t1.tiles
+
 
 
 # ap Scrabble::Scoring.highest_score_from(["qzqzqj", "aeiould"])
 # ap Scrabble::Scoring.score("aeiould")
 # ap Scrabble::Scoring.score("2qzqzqj")
 
-p1 = Scrabble::Player.new("Jessica")
-p1.play("test")
-p1.play("newWord")
-
-ap p1.won?
-ap p1.highest_word_score
+# p1 = Scrabble::Player.new("Jessica")
+# p1.play("test")
+# p1.play("newWord")
+#
+# ap p1.won?
+# ap p1.highest_word_score
