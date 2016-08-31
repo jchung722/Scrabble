@@ -169,13 +169,31 @@ class Scrabble::Game
 
   def move
     while true
-    print "Player 1 Tiles: #{p1.player_tiles}\nEnter a word with these tiles(type exit to quit):"
-    word = gets.chomp
-    if word == "exit"
-      exit
-    end
-    word_score = p1.play(word)
-    puts word_score
+      print "Player 1 Tiles: #{p1.player_tiles}\nEnter a word with these tiles(type exit to quit):"
+      word = gets.chomp.upcase
+      word2 = word
+
+      if word == "EXIT"
+        exit
+      end
+      test_input = true
+      while test_input == true
+        p1.player_tiles.each do |letter|
+          word2 = word2.sub(/[#{letter}]/, '')
+        end
+        if word2.length > 0
+          print "Please enter a word with the following tiles: #{p1.player_tiles}\nEnter another word (type exit to quit):"
+          word = gets.chomp.upcase
+          if word == "EXIT"
+            exit
+          end
+          word2 = word
+        else
+          test_input = false
+        end
+      end
+
+      word_score = p1.play(word)
       if word_score == false
         puts "Wow, #{p1.name}! Your score is #{p1.total_score}! Looks like you won! :D"
         exit
@@ -188,5 +206,5 @@ class Scrabble::Game
 
 end
 
-game = Scrabble::Game.new("Jeannie")
-game.move
+# game = Scrabble::Game.new("Jeannie")
+# game.move
