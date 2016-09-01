@@ -169,27 +169,36 @@ class Scrabble::Game
 
   def move
     while true
-      print "Player 1 Tiles: #{p1.player_tiles}\nEnter a word with these tiles(type exit to quit):"
+      print "Player 1 Tiles: #{p1.player_tiles}\nEnter a word with these tiles(type Q to quit):"
       word = gets.chomp.upcase
       word2 = word
 
-      if word == "EXIT"
+      if word == "Q"
         exit
       end
+
       test_input = true
       while test_input == true
         p1.player_tiles.each do |letter|
           word2 = word2.sub(/[#{letter}]/, '')
         end
         if word2.length > 0
-          print "Please enter a word with the following tiles: #{p1.player_tiles}\nEnter another word (type exit to quit):"
+          print "Please enter a word with the following tiles: #{p1.player_tiles}\nEnter another word (type Q to quit):"
           word = gets.chomp.upcase
-          if word == "EXIT"
+          if word == "Q"
             exit
           end
           word2 = word
         else
           test_input = false
+        end
+      end
+
+      until Scrabble::Dictionary.check_dictionary(word) == true
+        print "That's not a real word...Enter a real word please (type Q to quit):"
+        word = gets.chomp.upcase
+        if word == "Q"
+          exit
         end
       end
 
@@ -206,5 +215,86 @@ class Scrabble::Game
 
 end
 
+class Scrabble::Dictionary
+  def self.check_dictionary(word)
+    valid_word = false
+    IO.foreach("lib/Dictionary.txt") do |line|
+      if word == line.strip.upcase
+        return valid_word = true
+      end
+    end
+    return valid_word
+  end
+end
+
+class Scrabble::Board
+  attr_reader :board
+  def initialize
+    @board = Scrabble::BOARD.clone
+  end
+
+  def fill(word, start_position, direction)
+
+    case start_position[1]
+    when "A"
+      start_position.gsub!("A", "1")
+    when "B"
+      start_position.gsub!("B", "2")
+    when "C"
+      start_position.gsub!("C", "3")
+    when "D"
+      start_position.gsub!("D", "4")
+    when "E"
+      start_position.gsub!("E", "5")
+    when "F"
+      start_position.gsub!("F", "6")
+    when "G"
+      start_position.gsub!("G", "7")
+    when "H"
+      start_position.gsub!("H", "8")
+    when "I"
+      start_position.gsub!("I", "9")
+    when "J"
+      start_position.gsub!("J", "10")
+    when "K"
+      start_position.gsub!("K", "11")
+    when "L"
+      start_position.gsub!("L", "12")
+    when "M"
+      start_position.gsub!("M", "13")
+    when "N"
+      start_position.gsub!("N", "14")
+    when "O"
+      start_position.gsub!("O", "15")
+    end
+
+    position = start_position.split("").map(&:to_i)
+    v = position[0]
+    h = position[1]
+
+    word = word.upcase #changes all letters to uppercase
+    letters = word.split(//)
+
+    letters.each do |letter|
+      board[v][h] = letter
+      case direction
+      when "up"
+        v -= 1
+      when "down"
+        v += 1
+      when "right"
+        h += 1
+      when "left"
+        h -= 1
+      end
+    end
+    return board
+  end
+
+end
+
 # game = Scrabble::Game.new("Jeannie")
 # game.move
+
+t = Scrabble::Board.new
+print t.fill("Hello", "5C", "down")

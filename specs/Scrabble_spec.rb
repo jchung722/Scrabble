@@ -115,15 +115,32 @@ describe 'Testing Scrabble' do
   ##########---------------------- Wave 3 P2 ----------------------#########
 
   it "Must initialize a collection of tile letters that the player can use" do
-  p1 = Scrabble::Player.new("Jessica")
-  expect(p1.player_tiles).must_be_instance_of Array
-  expect(p1.player_tiles.length).must_equal(7)
+    p1 = Scrabble::Player.new("Jessica")
+    expect(p1.player_tiles).must_be_instance_of Array
+    expect(p1.player_tiles.length).must_equal(7)
   end
 
   it "Must always keep player tiles at 7" do
-  p1 = Scrabble::Player.new("Jeannie")
-  p1.play("art")
-  expect(p1.player_tiles.length).must_equal(7)
+    p1 = Scrabble::Player.new("Jeannie")
+    p1.play("art")
+    expect(p1.player_tiles.length).must_equal(7)
+  end
+
+  ###########------------- Optional Enhancement Dictionary -------------####
+
+  it "Must search a list of words to determine if user's word is valid or invalid" do
+    expect(Scrabble::Dictionary.check_dictionary("WORD")).must_equal(true)
+    expect(Scrabble::Dictionary.check_dictionary("THIS")).must_equal(true)
+    expect(Scrabble::Dictionary.check_dictionary("WORKS")).must_equal(true)
+    expect(Scrabble::Dictionary.check_dictionary("BLAHBLAH")).must_equal(false)
+    expect(Scrabble::Dictionary.check_dictionary("ALKJDFHKEWJHFWE")).must_equal(false)
+  end
+
+  ###########------------- Optional Enhancement Game Class ------------######
+
+  it "Must initialize a new game with a new player with a given name" do
+    game = Scrabble::Game.new("Jeannie")
+    expect(game.p1.name).must_equal("Jeannie")
   end
 
 end
