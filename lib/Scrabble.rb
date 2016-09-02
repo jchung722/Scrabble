@@ -116,6 +116,11 @@ class Scrabble::Player
 
   end
 
+  def dump_tiles
+    @player_tiles = []
+    draw_tiles
+  end
+
   def update_player_tiles(word)
     letters = word.upcase.split(//)
     letters.each do |letter|
@@ -197,26 +202,73 @@ class Scrabble::Game
       # Get a word
       print "
       \t\t*** #{player.name.upcase}'s Turn ***\n\n"
-      print "Enter a word with your tiles(type Q to quit):"
-      word = gets.chomp.upcase
-      word2 = word
 
-      # Exit if word is Q
-      if word == "Q"
-        exit
+      word, start_position, direction = get_word(player)
+
+      if word == true
+        return true
       end
+
+
+      # Check if the word fits with the existing tiles on the board
+      placement_valid = false
+      until placement_valid == true
+
+        letters, letter_locations, location_contents = b1.check_coverage(word, start_position, direction)
+
+        # are there overlapping letters that are in our word? if not you can't play here (if its not the first turn)
+        placement_valid_array = []
+        overlapping_tiles = []
+        if @first_turn == true
+          placement_valid = true
+          placement_valid_array[0] = true
+          @first_turn = false
+        else
+          letters.each_with_index do |letter, i|
+            if ("A".."Z").include?(location_contents[i])
+              if location_contents[i] == letter
+                placement_valid_array[i] = true
+                overlapping_tiles << letter
+              elsif location_contents[i] != letter
+                placement_valid_array[i] = false
+              end
+            else
+              placement_valid_array[i] = nil
+            end
+          end
+        end
+
+        if placement_valid_array.include?(true) && !placement_valid_array.include?(false)
+          placement_valid = true
+        else
+          puts "\nThat doesn't fit on the board, buddy. Follow the rules and try again.\n"
+          word, start_position, direction = get_word(player)
+          if word == true
+            return true
+          end
+        end
+      end
+
+      # if there are overlapping letters, make sure the word fits
+
+
+      # if the word fits, add the overlapping letters as overlapping_tiles to the next loop
+
+
 
       # Check if word contains only available letters
       test_input = true
+      word2 = word
       while test_input == true
-        player.player_tiles.each do |letter|
+        available_tiles = player.player_tiles + overlapping_tiles
+        available_tiles.each do |letter|
           word2 = word2.sub(/[#{letter}]/, '')
         end
         if word2.length > 0
-          print "You dont have those tiles... \nEnter another word (type Q to quit):"
-          word = gets.chomp.upcase
-          if word == "Q"
-            exit
+          print "You dont have those tiles..."
+          word, start_position, direction = get_word(player)
+          if word == true
+            return true
           end
           word2 = word
         else
@@ -226,37 +278,61 @@ class Scrabble::Game
 
       # Check that word is in the dictionary
       until Scrabble::Dictionary.check_dictionary(word) == true
-        print "That's not a real word...Enter a real word please (type Q to quit): "
-        word = gets.chomp.upcase
-        if word == "Q"
-          exit
+        print "That's not a real word..."
+        word, start_position, direction = get_word(player)
+        if word == true
+          return true
         end
       end
 
-      # Get the start position of the word (default to center on first turn)
-      if @first_turn == true
-        start_position = "7H"
-        @first_turn = false
-        # Actually should check if spaces_covered includes 7H...
-        # if not.. puts "Sorry, the first word must cover the center space (7H), try again: "
-      else
-        print "Enter the start position of your word (e.g 0A): "
-        start_position = gets.chomp.upcase
-      end
-
-      # Get the dorection the word should be placed
-      print "Do you want to place the word horizontally or vertically? (h/v): "
-      direction = gets.chomp
-
       # add the word to the list of words played by the current player (returns false if someone won)
-      word_score = player.play(word)
-      player.update_player_tiles(word)
+      word_score = player.play(word)  # pass this one "swamp"
+############    # overlapping_tiles
+      word_self_tiles_only = word
+      (overlapping_tiles).each do |tile|
+          word_self_tiles_only = word_self_tiles_only.sub(/#{tile}/, '')
+      end
+      player.update_player_tiles(word_self_tiles_only) # pass this one "wamp" **excplde overlapping tiles from tile replacement
 
       # Display the score of the played word and Update the board
+      # print "\x1B[2J"  # this is an ansi code to clear the terminal screen
       puts "\n\n\n\n\"#{word}\" was #{word_score} points! "
+
       print display_board(word, start_position, direction)
       return word_score
     end
+  end
+
+  #Collet the word
+  def get_word(player)
+    print "\nEnter a word (type Q to quit / D to dump tiles):"
+    word = gets.chomp.upcase
+
+    if word == "Q"
+      exit
+    elsif word == "D"
+      player.dump_tiles
+      puts "\n\nHere are new tiles! Your turn is over!\n"
+      print display_board(b1.board_array[0][0], "0A", "right")
+      return true
+    end
+
+    # Get the start position of the word (default to center on first turn)
+    if @first_turn == true
+      start_position = "7H"
+      # Actually should check if spaces_covered includes 7H...
+      # if not.. puts "Sorry, the first word must cover the center space (7H), try again: "
+    else
+      print "Enter the start position of your word (e.g 0A): "
+      start_position = gets.chomp.upcase
+    end
+
+    # Get the dorection the word should be placed
+    print "Do you want to place the word horizontally or vertically? (h/v): "
+    direction = gets.chomp
+
+    return [word, start_position, direction]
+
   end
 
   # Display the current board
@@ -264,8 +340,9 @@ class Scrabble::Game
     return b1.fill(word, start_position, direction)
   end
 
+  # unused right now
   def spaces_covered
-    display_board
+    # display_board
   end
 
 end
@@ -333,55 +410,51 @@ class Scrabble::Board
 
     # Get input word, position, and diection in the proper formats
     def clean_up_input(word, start_position, direction)
+      position_array = []
       if start_position.length > 2
         letter = start_position[2]
+        position_array[0] = start_position[0,2]
       else
         letter = start_position[1]
-      end
-      case letter #start_position[1]
-      when "A"
-        start_position.gsub!("A", "0")
-      when "B"
-        start_position.gsub!("B", "1")
-      when "C"
-        start_position.gsub!("C", "2")
-      when "D"
-        start_position.gsub!("D", "3")
-      when "E"
-        start_position.gsub!("E", "4")
-      when "F"
-        start_position.gsub!("F", "5")
-      when "G"
-        start_position.gsub!("G", "6")
-      when "H"
-        start_position.gsub!("H", "7")
-      when "I"
-        start_position.gsub!("I", "8")
-      when "J"
-        start_position.gsub!("J", "9")
-      when "K"
-        start_position.gsub!("K", "10")
-      when "L"
-        start_position.gsub!("L", "11")
-      when "M"
-        start_position.gsub!("M", "12")
-      when "N"
-        start_position.gsub!("N", "13")
-      when "O"
-        start_position.gsub!("O", "14")
+        position_array[0] = start_position[0]
       end
 
-      position = start_position.split("").map(&:to_i) # Split the position into an integer array
-      if position.length == 3
-        v = position[0,2].join.to_i
-        h = position[2]
-      elsif position.length == 4
-          v = position[0,2].join.to_i
-          h = position[2,2].join.to_i
-      elsif position.length == 2
-        v = position[0]
-        h = position[1]
+      case letter #start_position[1]
+      when "A"
+        position_array[1] = "0"
+      when "B"
+        position_array[1] = "1"
+      when "C"
+        position_array[1] = "2"
+      when "D"
+        position_array[1] = "3"
+      when "E"
+        position_array[1] = "4"
+      when "F"
+        position_array[1] = "5"
+      when "G"
+        position_array[1] = "6"
+      when "H"
+        position_array[1] = "7"
+      when "I"
+        position_array[1] = "8"
+      when "J"
+        position_array[1] = "9"
+      when "K"
+        position_array[1] = "10"
+      when "L"
+        position_array[1] = "11"
+      when "M"
+        position_array[1] = "12"
+      when "N"
+        position_array[1] = "13"
+      when "O"
+        position_array[1] = "14"
       end
+
+
+      v = position_array[0].to_i
+      h = position_array[1].to_i
 
       word = word.upcase #changes all letters to uppercase
       direction = direction.downcase
@@ -391,12 +464,10 @@ class Scrabble::Board
 
     # Place the word in the board array variable in the correct place/orientation
     def fill(word, start_position, direction)
+      check_coverage(word, start_position, direction)
 
       word, v, h = clean_up_input(word, start_position, direction)
-      ap start_position
-      ap direction
-      ap v
-      ap h
+
       letters = word.split(//)
 
       letters.each do |letter|
@@ -413,25 +484,41 @@ class Scrabble::Board
     end
 
     # Get the positions and contents of all the spaces that the word is going to cover
-    # def check_coverage(word, start_position, direction)
-    #   word, start_position, v, h = clean_up_input(word, start_position, direction)
-    #
-    #   letters = word.split(//)
-    #   letter_locations =
-    #
-    #   (letters.length).times do |i|
-    #     letter_locations[i] = start_position
-    #     case direction
-    #     when "v"
-    #       v += 1
-    #     when "h"
-    #       h += 1
-    #     end
-    #   end
-    #
-    #   location_contents =
-    #
-    # end
+    def check_coverage(word, start_position, direction)
+      word, v, h = clean_up_input(word, start_position, direction)
+      # ap start_position
+      # ap direction
+      # ap v
+      # ap h
+      letters = word.split(//)
+      v2 = v
+      h2 = h
+
+      letter_locations = []
+      (letters.length).times do |i|
+        letter_locations[i] = [v,h]
+        case direction
+        when "v"
+          v += 1
+        when "h"
+          h += 1
+        end
+      end
+
+      location_contents = []
+      (letters.length).times do |i|
+        location_contents[i] = board_array[v2][h2]
+        case direction
+        when "v"
+          v2 += 1
+        when "h"
+          h2 += 1
+        end
+      end
+
+      return [letters, letter_locations, location_contents]
+
+    end
 end
 
 game = Scrabble::Game.new("Jeannie", "Jessica")
