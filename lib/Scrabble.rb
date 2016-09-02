@@ -521,8 +521,8 @@ class Scrabble::Board
     end
 end
 
-game = Scrabble::Game.new("Jeannie", "Jessica")
-game.play_game
+# game = Scrabble::Game.new("Jeannie", "Jessica")
+# game.play_game
 
 # t = Scrabble::Board.new
 # print t.fill("Hello", "0A", "down")
